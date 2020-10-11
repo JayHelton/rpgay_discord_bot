@@ -13,7 +13,7 @@ If you want more information about a specific command, just pass the command as 
 #[max_levenshtein_distance(3)]
 #[indention_prefix = "+"]
 #[lacking_permissions = "Hide"]
-#[lacking_role = "Nothing"]
+#[lacking_role = "Hide"]
 #[wrong_channel = "Strike"]
 pub async fn my_help(
     context: &Context,

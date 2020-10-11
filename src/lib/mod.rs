@@ -1,3 +1,4 @@
+pub mod nomination;
 pub mod services;
 pub mod general;
 pub mod help;

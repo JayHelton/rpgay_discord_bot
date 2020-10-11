@@ -2,6 +2,7 @@ pub mod lib;
 use crate::general::GENERAL_GROUP;
 use crate::help::MY_HELP;
 use crate::hooks::*;
+use crate::nomination::NOMINATION_GROUP;
 use crate::services::application::get_application_data;
 use crate::structs::*;
 
@@ -55,7 +56,8 @@ async fn main() {
         .normal_message(normal_message)
         .on_dispatch_error(dispatch_error)
         .help(&MY_HELP)
-        .group(&GENERAL_GROUP);
+        .group(&GENERAL_GROUP)
+        .group(&NOMINATION_GROUP);
 
     let mut client = Client::new(&token)
         .event_handler(Handler)
