@@ -16,6 +16,12 @@ impl TypeMapKey for CommandCounter {
     type Value = HashMap<String, u64>;
 }
 
+pub struct DbContext;
+
+impl TypeMapKey for DbContext {
+    type Value = HashMap<String, mongodb::Database>;
+}
+
 pub struct Handler;
 
 #[async_trait]

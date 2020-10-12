@@ -1,3 +1,5 @@
+use crate::database::collections::nominations::add_nomination;
+use crate::utils::{get_database_from_ctx, send_discord_message};
 use serenity::prelude::*;
 use serenity::{
     framework::standard::{
@@ -7,6 +9,8 @@ use serenity::{
     model::channel::Message,
 };
 
+use crate::database::collections::nomination_window::{end_window, start_window};
+
 #[group]
 #[commands(nomination, nominate)]
 pub struct Nomination;
@@ -14,25 +18,32 @@ pub struct Nomination;
 #[command]
 #[allowed_roles("Lord Ruler")]
 async fn nomination(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    let db = get_database_from_ctx(ctx).await;
     let first_arg: String = args.parse().unwrap();
+    let content: &str;
+
     match first_arg.as_str() {
         "start" => {
-            if let Err(why) = msg
-                .channel_id
-                .say(&ctx.http, "You've Started the Nomination Period!")
-                .await
-            {
-                println!("Error sending message: {:?}", why);
-            }
+            let started = start_window(&db).await?;
+
+            content = if started {
+                "Nomination Started!"
+            } else {
+                "Nomination failed to start! Has one already been started?"
+            };
+
+            send_discord_message(msg, ctx, content).await;
         }
         "end" => {
-            if let Err(why) = msg
-                .channel_id
-                .say(&ctx.http, "You've Ended the Nomination Period!")
-                .await
-            {
-                println!("Error sending message: {:?}", why);
-            }
+            let ended = end_window(&db).await?;
+
+            content = if ended {
+                "Nomination ended!"
+            } else {
+                "Nomination not found! Has one been started yet?"
+            };
+
+            send_discord_message(msg, ctx, content).await;
         }
         _ => {}
     }
@@ -42,28 +53,15 @@ async fn nomination(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 #[command]
 #[allowed_roles("patron")]
 async fn nominate(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    let db = get_database_from_ctx(ctx).await;
     let first_arg: String = args.parse().unwrap();
-    if let Err(why) = msg
-        .channel_id
-        .say(&ctx.http, format!("You've nominated {}!", first_arg))
-        .await
-    {
-        println!("Error sending message: {:?}", why);
-    }
-    Ok(())
-}
 
-#[command]
-async fn list(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    if let Err(why) = msg
-        .channel_id
-        .say(
-            &ctx.http,
-            "Ill list all the games nominated for this round.",
-        )
-        .await
-    {
-        println!("Error sending message: {:?}", why);
-    }
+    let _nominated = add_nomination(&db, first_arg.clone()).await?;
+    send_discord_message(
+        msg,
+        ctx,
+        format!("You've nominated {}!", first_arg.clone()).as_str(),
+    )
+    .await;
     Ok(())
 }

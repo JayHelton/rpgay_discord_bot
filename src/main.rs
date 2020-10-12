@@ -1,11 +1,11 @@
 pub mod lib;
+use crate::database::get_db;
 use crate::general::GENERAL_GROUP;
 use crate::help::MY_HELP;
 use crate::hooks::*;
 use crate::nomination::NOMINATION_GROUP;
 use crate::services::application::get_application_data;
 use crate::structs::*;
-
 use lib::*;
 
 use serenity::{
@@ -66,7 +66,16 @@ async fn main() {
         .expect("Err creating client");
 
     {
+        let mut db_context = HashMap::new();
+        let db = match get_db().await {
+            Ok(db) => db,
+            Err(why) => panic!("{:?}", why),
+        };
+
+        db_context.insert("db".to_string(), db);
         let mut data = client.data.write().await;
+
+        data.insert::<DbContext>(db_context);
         data.insert::<CommandCounter>(HashMap::default());
         data.insert::<ShardManagerContainer>(Arc::clone(&client.shard_manager));
     }
