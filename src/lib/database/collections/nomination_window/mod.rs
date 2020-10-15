@@ -1,41 +1,18 @@
+use crate::utils::insert_operation;
+use crate::utils::update_operation;
 use mongodb::bson::doc;
 use mongodb::{error::Error, Database};
 
 pub async fn start_window(db: &Database) -> Result<bool, Error> {
     let collection = db.collection("nominations");
-    let filter = doc! { "active": true };
-    let cursor = collection.find_one(filter, None).await?;
-    match cursor {
-        Some(_document) => Ok(false),
-        None => {
-            let new_nomination = doc! {
-               "active": true,
-            };
-            let _insert_result = collection.insert_one(new_nomination.clone(), None).await?;
-            Ok(true)
-        }
-    }
+    insert_operation(&collection, || doc! {"active": true}, doc! {"active": true}).await
 }
 
 pub async fn end_window(db: &Database) -> Result<bool, Error> {
     let collection = db.collection("nominations");
-    let filter = doc! { "active": true };
-    let cursor = collection.find_one(filter, None).await?;
-    match cursor {
-        Some(document) => {
-            let _updated = collection
-                .update_one(
-                    doc! {
-                        "_id": document.get("_id").expect("No Id Found")
-                    },
-                    doc! {
-                     "$set":  {"active": false }
-                    },
-                    None,
-                )
-                .await?;
-            Ok(true)
-        }
-        None => Ok(false),
-    }
+    let update_value = doc! {
+       "active": false,
+    };
+    let get_filter = || doc! {"active": true};
+    update_operation(&collection, get_filter, update_value).await
 }
