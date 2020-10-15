@@ -43,7 +43,6 @@ pub async fn get_nomination_list(db: &Database) -> Result<Vec<mongodb::bson::Bso
 
         match nominations {
             Some(noms) => {
-                println!("{:?}", noms);
                 match noms.as_array() {
                     Some(nom_doc) => Ok(nom_doc.clone()),
                     None => Ok(vec![]),

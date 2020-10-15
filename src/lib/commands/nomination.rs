@@ -71,7 +71,35 @@ async fn nominate(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 async fn list(ctx: &Context, msg: &Message, _args: Args) -> CommandResult {
     let db = get_database_from_ctx(ctx).await;
     let nominations = get_nomination_list(&db).await?;
-    let msg_content = format!("This is the number of nominations {}", nominations.len());
-    send_discord_message(msg, ctx, msg_content.as_str()).await;
+    let sent = msg
+        .channel_id
+        .send_message(&ctx.http, |m| {
+            m.content("Hello, World!");
+            m.embed(|e| {
+                e.title("Nomination List");
+                // e.fields(nominations.iter().map(|x| {
+                //     let doc = x.as_document();
+                //     match doc {
+                //         Some(document) => match document.get_str("name") {
+                //             Ok(name) => (name, "", true),
+                //             Err(_why) => ("", "", true),
+                //         },
+                //         None => ("", "", true),
+                //     }
+                // }));
+                e.footer(|f| {
+                    f.text("This list is immutable.");
+                    f
+                });
+
+                e
+            });
+            m
+        })
+        .await;
+
+    if let Err(why) = sent {
+        println!("Error sending message: {:?}", why);
+    }
     Ok(())
 }
