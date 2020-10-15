@@ -1,9 +1,9 @@
 pub mod lib;
+use crate::commands::general::GENERAL_GROUP;
+use crate::commands::help::MY_HELP;
+use crate::commands::hooks::*;
+use crate::commands::nomination::NOMINATION_GROUP;
 use crate::database::get_db;
-use crate::general::GENERAL_GROUP;
-use crate::help::MY_HELP;
-use crate::hooks::*;
-use crate::nomination::NOMINATION_GROUP;
 use crate::services::application::get_application_data;
 use crate::structs::*;
 use lib::*;
